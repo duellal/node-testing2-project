@@ -5,9 +5,10 @@ exports.up = async function(knex) {
         table.string(`breed`)
             .notNullable()
             .unique()
-        table.size(`size`)
+        table.string(`size`)
             .notNullable()
-            .checkIn([`large, small, medium`])
+        //want to make only 3 sizes that can be added to the table
+            // .checkIn([`large, small, medium`])            
     })
 };
 

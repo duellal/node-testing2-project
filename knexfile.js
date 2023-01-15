@@ -1,18 +1,22 @@
-const repeated = {
+const sharedConfig = {
   client: 'sqlite3',
   useNullAsDefault: true, 
   migrations: {directory: `./data/migrations`},
-  seeds: {directory: `./data/seeds`}
+  seeds: {directory: `./data/seeds`},
+  pool: {afterCreate: (conn, done) => {
+    conn.run('PRAGMA foreign_keys = ON', done)
+  }}
 }
+
 module.exports = {
   development: {
-    ...repeated,
+    ...sharedConfig,
     connection: {
       filename: `./data/dogBreeds.db3`
-    }
+    },
   },
   testing: {
-    ...repeated,
+    ...sharedConfig,
     connection: `./data/testBreeds.db3`
   }
 };
