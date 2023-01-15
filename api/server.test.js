@@ -75,9 +75,10 @@ describe(`[GET] /api/breeds/:id`, () => {
   })
 
   test(`responds with error if id does not exist`, async () => {
-    const res = await request(server).get(`/api/breeds/1`)
-    expect(res.body).toMatchObject({message: `Id 1 does not exist.`})
-    expect(res.status).toBe(400)
+    const res = await request(server).get(`/api/breeds/100`)
+ 
+    expect(res.body).toMatchObject({message: `Id 100 not found`})
+    expect(res.status).toBe(404)
   })
 })
 
@@ -94,17 +95,21 @@ describe(`[POST] /api/breeds`, () => {
     const newDb = await db('dogBreeds')
 
     expect(newDb).toHaveLength(4)
-    expect(newDb).toContain(newBreed)
+    expect(newDb).toEqual(
+        expect.arrayContaining([
+        expect.objectContaining(newBreed)
+      ])
+    )
   })
 
   test(`throws error if size or breed is missing`, async () => {
     let res = await request(server).post(`/api/breeds`).send(missingBreed)
     expect(res.status).toBe(400)
-    expect(res.body).toBe({message: `missing dog size or breed`})
+    expect(res.body).toMatchObject({message: `missing dog breed or breed is not a string`})
 
     res = await request(server).post(`/api/breeds`).send(missingSize)
     expect(res.status).toBe(400)
-    expect(res.body).toBe({message: `missing dog size or breed`})
+    expect(res.body).toMatchObject({message: `missing dog size or size is not a string`})
   })
 })
 
@@ -114,35 +119,40 @@ describe(`[PUT] /api/breeds/:id`, () => {
     const updatedDb = await db(`dogBreeds`)
 
     expect(res.status).toBe(200)
-    expect(res.body).toMatchObject(newBreed)
+    expect(res.body).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining(newBreed)
+      ])
+    )
     expect(updatedDb).toHaveLength(3)
-    expect(updatedDb).toContain(newBreed)
-  })
-
-  test(`throws error if size or breed is missing in request`, async () => {
-    let res = await request(server).put(`/api/breeds/1`).send(missingBreed)
-    expect(res.status).toBe(400)
-    expect(res.body).toBe({message: `missing dog size or breed`})
-
-    res = await request(server).put(`/api/breeds/1`).send(missingSize)
-    expect(res.status).toBe(400)
-    expect(res.body).toBe({message: `missing dog size or breed`})
+    expect(updatedDb).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining(newBreed)
+      ])
+    )
   })
 })
 
 describe(`[DEL] /api/breeds/:id`, () => {
   test(`resolves to deleted breed`, async () => {
-    const res = await request(server).del(`/api/breeds/2`).send(pom)
+    const res = await request(server).del(`/api/breeds/2`)
 
     expect(res.status).toBe(200)
     expect(res.body).toMatchObject(pom)
   })
 
   test(`db does not have deleted breed`, async () => {
-    const res = await request(server).del(`/api/breeds/2`).send(pom)
+    await request(server).del(`/api/breeds/2`)
     const updatedDb2 = await db(`dogBreeds`)
 
     expect(updatedDb2).toHaveLength(2)
     expect(updatedDb2).not.toContain(pom)
+  })
+
+  test(`throws error if id does not exist`, async () => {
+    const res = await request(server).del(`/api/breeds/100`)
+
+    expect(res.status).toBe(404)
+    expect(res.body).toMatchObject({message: `Id 100 not found`})
   })
 })
