@@ -108,8 +108,6 @@ describe(`remove`, () => {
         const breedRemove = await Breeds.remove(3)
         const updatedTable3 = await db(`dogBreeds`)
 
-        console.log(breedRemove)
-
         expect(updatedTable3).toHaveLength(2)
         expect(updatedTable3).not.toContain(aussie)
         expect(breedRemove).toMatchObject(aussie)
